@@ -334,8 +334,9 @@ def print_router_response(router_response, response_type, original_conversation_
                       f"received back is [{gateway_response_conversation_id}] were different. That probably means that "
                       f"the gateway sent a wrong response that was not associated with the reqeust.")
 
-    if not router_response_response_payload_dict.get('is_ok'):
+    if not (router_response_response_payload_dict.get('is_ok') or router_response_response_payload_dict.get('isOk')):
         print(f"{bcolors.FAIL}{json.dumps(router_response_response_payload_dict, indent=4)}{bcolors.ENDC}")
+        return
 
     if router_response_response_payload_dict.get('isScheduled') or router_response_response_payload_dict.get('is_scheduled'):
         conversation_id = router_response_response_payload_dict.get('conversation_id')
@@ -414,11 +415,11 @@ def print_router_response(router_response, response_type, original_conversation_
         print(f'\t{bcolors.OKGREEN}Connection Status : {router_details.get("status")}{bcolors.ENDC}')
 
         print(f'\n{bcolors.OKBLUE}PAM Configurations(s) Available to Gateway{bcolors.ENDC}')
-        rotation_settings_list = gateway_info.get('rotation_settings')
+        pam_configs = gateway_info.get('pam_configurations')
 
-        if rotation_settings_list:
-            for rs in rotation_settings_list:
-                print(f'\t{bcolors.OKGREEN}UID          : {rs.get("configurationUid")}{bcolors.ENDC}')
+        if pam_configs:
+            for pc in pam_configs:
+                print(f'\t{bcolors.OKGREEN}UID          : {pc}{bcolors.ENDC}')
         else:
             print(f'\t{bcolors.WARNING}No PAM Configurations{bcolors.ENDC}')
 
