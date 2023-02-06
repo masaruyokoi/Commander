@@ -216,6 +216,7 @@ def router_send_action_to_gateway(params, gateway_action: GatewayAction, message
                 return
 
             destination_gateway_uid_bytes = gateway_helper.find_connected_gateways(router_enterprise_controllers_connected, gateway_action.gateway_destination)
+            destination_gateway_uid_str = loginv3.CommonHelperMethods.bytes_to_url_safe_str(destination_gateway_uid_bytes)
 
     msg_id = gateway_action.conversationId if gateway_action.conversationId else GatewayAction.generate_conversation_id()
     msg_id_bytes = string_to_bytes(msg_id)
@@ -309,7 +310,6 @@ def router_send_message_to_gateway(params, transmission_key, rq_proto, destinati
             'TransmissionKey': bytes_to_base64(encrypted_transmission_key),
             'Authorization': f'KeeperUser {bytes_to_base64(encrypted_session_token)}',
         },
-        cookies=dict(destination_gateway_cookies),
         data=encrypted_payload if rq_proto else None
     )
 

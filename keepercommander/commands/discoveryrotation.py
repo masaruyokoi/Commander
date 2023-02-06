@@ -283,7 +283,7 @@ class PAMListRecordRotationCommand(Command):
 
         enterprise_all_controllers = list(gateway_helper.get_all_gateways(params))
         enterprise_controllers_connected_resp = router_get_connected_gateways(params)
-        enterprise_controllers_connected = list(enterprise_controllers_connected_resp.controllers)
+        enterprise_controllers_connected_uids_bytes = list(enterprise_controllers_connected_resp.controllers)
 
         all_pam_config_records = pam_configurations_get_all(params)
         table = []
@@ -312,7 +312,7 @@ class PAMListRecordRotationCommand(Command):
             configuration_uid_str = CommonHelperMethods.bytes_to_url_safe_str(configuration_uid)
             pam_configuration = next((pam_config for pam_config in all_pam_config_records if pam_config.get('record_uid') == configuration_uid_str), None)
 
-            is_controller_online = next((poc for poc in enterprise_controllers_connected if poc == configuration_uid), False)
+            is_controller_online = next((poc for poc in enterprise_controllers_connected_uids_bytes if poc == configuration_uid), False)
 
             row_color = ''
             if record_uid in params.record_cache:
@@ -353,14 +353,30 @@ class PAMListRecordRotationCommand(Command):
 
             row.append(f'{schedule_str}')
 
+            # Controller Info
+
+            enterprise_controllers_connected = router_get_connected_gateways(params)
+            connected_controller = None
+            if enterprise_controllers_connected:
+                # Find connected controller (TODO: Optimize, don't search for controllers every time, no N^n)
+                router_controllers = list(enterprise_controllers_connected.controllers)
+                connected_controller = next(
+                    (ent_con_cntr for ent_con_cntr in router_controllers if ent_con_cntr == controller_details.controllerUid), None)
+
+            if connected_controller:
+                controller_stat_color = bcolors.OKGREEN
+            else:
+                controller_stat_color = bcolors.WHITE
+
+
             controller_color = bcolors.WHITE
             if is_controller_online:
                 controller_color = bcolors.OKGREEN
 
             if controller_details:
-                row.append(f'{controller_color}{controller_details.controllerName}{bcolors.ENDC}')
+                row.append(f'{controller_stat_color}{controller_details.controllerName}{bcolors.ENDC}')
             else:
-                row.append(f'{controller_color}[Does not exist]{bcolors.ENDC}')
+                row.append(f'{controller_stat_color}[Does not exist]{bcolors.ENDC}')
 
             if is_verbose:
                 row.append(f'{controller_color}{base64_url_encode(controller_uid)}{bcolors.ENDC}')
@@ -388,13 +404,15 @@ class PAMListRecordRotationCommand(Command):
         dump_report_data(table, headers, fmt='table', filename="",
                          row_number=False, column_width=None)
 
+        print(f"\n{bcolors.OKBLUE}----------------------------------------------------------{bcolors.ENDC}")
+        print(f"{bcolors.OKBLUE}Example to rotate record to which this user has access to:{bcolors.ENDC}")
+        print(f"\t{bcolors.OKBLUE}pam action rotate -r [RECORD UID]{bcolors.ENDC}")
+
 
 class PAMGatewayListCommand(Command):
     pam_cmd_controllers_parser = argparse.ArgumentParser(prog='dr-gateway')
-    pam_cmd_controllers_parser.add_argument('--force', '-f', required=False, default=False, dest='is_force',
-                                            action='store_true', help='Force retrieval of gateways')
-    pam_cmd_controllers_parser.add_argument('--verbose', '-v', required=False, default=False, dest='is_verbose',
-                                            action='store_true', help='Verbose output')
+    pam_cmd_controllers_parser.add_argument('--force', '-f', required=False, default=False, dest='is_force', action='store_true', help='Force retrieval of gateways')
+    pam_cmd_controllers_parser.add_argument('--verbose', '-v', required=False, default=False, dest='is_verbose', action='store_true', help='Verbose output')
     pam_cmd_controllers_parser.error = raise_parse_exception
     pam_cmd_controllers_parser.exit = suppress_exit
 
