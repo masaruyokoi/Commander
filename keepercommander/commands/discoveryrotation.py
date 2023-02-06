@@ -25,8 +25,8 @@ from .folder import FolderMoveCommand
 from .pam import gateway_helper, router_helper
 from .pam.config_helper import pam_configurations_get_all, pam_configuration_get_one, \
     pam_configuration_remove, pam_configuration_create_record_v6, record_rotation_get, \
-    pam_configuration_get_single_value_from_field_by_id, \
-    pam_configuration_get_all_values_from_field_by_id
+    pam_configuration_get_single_value_from_field_by_id, pam_configuration_get_all_values_from_field_by_id, \
+    pam_decrypt_configuration_data
 from .pam.gateway_helper import create_gateway, find_one_gateway_by_uid_or_name
 from .pam.pam_dto import GatewayActionGatewayInfo, GatewayActionDiscoverInputs, GatewayActionDiscover, \
     GatewayActionRotate, \
@@ -309,9 +309,10 @@ class PAMListRecordRotationCommand(Command):
             controller_uid = s.controllerUid
             controller_details = next((ctr for ctr in enterprise_all_controllers if ctr.controllerUid == controller_uid), None)
             configuration_uid = s.configurationUid
-            pam_configuration = next((pam_config for pam_config in all_pam_config_records if pam_config.get('record_uid') == configuration_uid), None)
+            configuration_uid_str = CommonHelperMethods.bytes_to_url_safe_str(configuration_uid)
+            pam_configuration = next((pam_config for pam_config in all_pam_config_records if pam_config.get('record_uid') == configuration_uid_str), None)
 
-            is_controller_online = next((poc for poc in enterprise_controllers_connected if poc.controllerUid == controller_uid), False)
+            is_controller_online = next((poc for poc in enterprise_controllers_connected if poc == configuration_uid), False)
 
             row_color = ''
             if record_uid in params.record_cache:
@@ -326,8 +327,8 @@ class PAMListRecordRotationCommand(Command):
             else:
                 row_color = bcolors.WHITE
 
-                record_title = '[no access to record]'
-                record_type = '[no access to record]'
+                record_title = '[record inaccessible]'
+                record_type = '[record inaccessible]'
 
             row.append(f'{row_color}{record_uid}')
             row.append(record_title)
@@ -365,9 +366,17 @@ class PAMListRecordRotationCommand(Command):
                 row.append(f'{controller_color}{base64_url_encode(controller_uid)}{bcolors.ENDC}')
 
             if not pam_configuration:
-                row.append(f"{bcolors.FAIL}[No config found]{bcolors.ENDC}")
+                if not is_verbose:
+                    row.append(f"{bcolors.FAIL}[No config found]{bcolors.ENDC}")
+                else:
+                    row.append(f"{bcolors.FAIL}[No config found. Looks like configuration {configuration_uid_str} was removed but rotation schedule was not modified{bcolors.ENDC}")
+
             else:
-                row.append(f"{json.loads(pam_configuration.data).get('name')} ({json.loads(pam_configuration.data).get('configType')})")
+
+                pam_data_decrypted = pam_decrypt_configuration_data(pam_configuration)
+                pam_config_name = pam_data_decrypted.get('title')
+                pam_config_type = pam_data_decrypted.get('type')
+                row.append(f"{pam_config_name} ({pam_config_type})")
 
             if is_verbose:
                 row.append(f'{base64_url_encode(configuration_uid)}{bcolors.ENDC}')
@@ -1014,6 +1023,8 @@ class PAMGatewayActionJobCancelCommand(Command):
 
 class PAMGatewayActionJobCommand(Command):
     pam_action_job_command_parser = argparse.ArgumentParser(prog='pam-action-job-command')
+    pam_action_job_command_parser.add_argument('--gateway', '-g', required=False, dest='gateway_uid', action='store',
+                                               help='Gateway UID. Needed only if there are more than one gateway running')
     pam_action_job_command_parser.add_argument('job_id')
 
     def get_parser(self):  # type: () -> Optional[argparse.ArgumentParser]
@@ -1022,6 +1033,7 @@ class PAMGatewayActionJobCommand(Command):
     def execute(self, params, **kwargs):  # type: (KeeperParams, any) -> any
 
         job_id = kwargs.get('job_id')
+        gateway_uid = kwargs.get('gateway_uid')
 
         print(f"Job id to check [{job_id}]")
 
@@ -1034,7 +1046,8 @@ class PAMGatewayActionJobCommand(Command):
                 inputs=action_inputs,
                 conversation_id=conversation_id),
             message_type=ControllerMessageType.Value('CMT_GENERAL'),
-            is_streaming=False
+            is_streaming=False,
+            destination_gateway_uid_str=gateway_uid
         )
 
         print_router_response(router_response, original_conversation_id=conversation_id, response_type='job_info')

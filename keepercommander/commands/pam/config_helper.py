@@ -17,8 +17,22 @@ from keepercommander.proto.pam_pb2 import (
 from keepercommander.proto.router_pb2 import RouterRotationInfo
 
 
-def pam_configuration_get_single_value_from_field_by_id(unencrypted_record_dict, field_id):
-    values = pam_configuration_get_all_values_from_field_by_id(unencrypted_record_dict, field_id)
+def pam_decrypt_configuration_data(pam_config_v6_record):
+    pam_config_v6_record.get('data'),
+    pam_config_v6_record.get('record_key_unencrypted')
+    data_unencrypted_bytes = crypto.decrypt_aes_v2(
+        utils.base64_url_decode(pam_config_v6_record.get('data')),
+        pam_config_v6_record.get('record_key_unencrypted')
+    )
+
+    data_unencrypted_json_str = bytes_to_string(data_unencrypted_bytes)
+    data_unencrypted_dict = json.loads(data_unencrypted_json_str)
+
+    return data_unencrypted_dict
+
+
+def pam_configuration_get_single_value_from_field_by_id(decrypted_record_dict, field_id):
+    values = pam_configuration_get_all_values_from_field_by_id(decrypted_record_dict, field_id)
     if not values:
         return None
 
@@ -28,17 +42,17 @@ def pam_configuration_get_single_value_from_field_by_id(unencrypted_record_dict,
     return None
 
 
-def pam_configuration_get_all_values_from_field_by_id(unencrypted_record_dict, field_id):
-    field = pam_configuration_get_field_by_id(unencrypted_record_dict, field_id)
+def pam_configuration_get_all_values_from_field_by_id(decrypted_record_dict, field_id):
+    field = pam_configuration_get_field_by_id(decrypted_record_dict, field_id)
     if not field:
         return None
 
     return field.get('value')
 
 
-def pam_configuration_get_field_by_id(unencrypted_record_dict, field_id):
+def pam_configuration_get_field_by_id(decrypted_record_dict, field_id):
 
-    fields = unencrypted_record_dict.get('fields')
+    fields = decrypted_record_dict.get('fields')
 
     if not fields:
         return None

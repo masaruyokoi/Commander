@@ -208,7 +208,9 @@ def router_send_action_to_gateway(params, gateway_action: GatewayAction, message
 
             if not gateway_action.gateway_destination:
                 print(f"{bcolors.WARNING}There are more than one Gateways running in your enterprise. "
-                      f"You need to proved gateway to the action. To find connected gateways run action "
+                      f"Only {bcolors.HIGHINTENSITYWHITE}pam action rotate{bcolors.WARNING} is able to know "
+                      f"which Gateway should receive a request. Any other commands should have a Gateway specified. "
+                      f"See help for the command you are trying to use. To find connected gateways run action "
                       f"'{bcolors.OKBLUE}pam gateway list{bcolors.WARNING}' and provide Gateway UID or Gateway Name.{bcolors.ENDC}")
 
                 return
@@ -241,20 +243,24 @@ def router_send_action_to_gateway(params, gateway_action: GatewayAction, message
         router_response.ParseFromString(rs_body)
 
         rrc = RouterResponseCode.Name(router_response.responseCode)
-        if router_response.responseCode == RRC_BAD_STATE:
+        if router_response.responseCode == RRC_OK:
+            logging.debug("Good response...")
+
+        elif router_response.responseCode == RRC_BAD_STATE:
             raise Exception(router_response.errorMessage + ' response code: ' + rrc)
 
-        if router_response.responseCode == RRC_TIMEOUT:
+        elif router_response.responseCode == RRC_TIMEOUT:
             # Router tried to send message to the Controller but the response didn't arrive on time
             # ex. if Router is expecting response to be within 3 sec, but the gateway didn't respond within that time
             raise Exception(router_response.errorMessage + ' response code: ' + rrc)
 
-        if router_response.responseCode == RRC_CONTROLLER_DOWN:
+        elif router_response.responseCode == RRC_CONTROLLER_DOWN:
             # Sent an action to the Controller that is no longer online
             raise Exception(router_response.errorMessage + ' response code: ' + rrc)
 
-        if router_response.responseCode != RRC_OK:
+        else:
             raise Exception(router_response.errorMessage + ' response code: ' + rrc)
+
 
         payload_encrypted = router_response.encryptedPayload
         if payload_encrypted:
