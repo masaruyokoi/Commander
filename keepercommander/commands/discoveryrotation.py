@@ -728,8 +728,7 @@ class PAMConfigurationNewAWSCommand(Command):
 
         record_data = {
             'title': pam_configuration_title,
-            # 'type':  'aws',   # proposed by Max and Jacob
-            # 'type':  'PAM AWS Configuration', # this is the record type name in the database
+            # 'type':  'pamAwsConfiguration',   # this is the record type name in the database
             'type':  'PAM AWS Provider',    # temporary, to be removed
             'fields': [
                 {'id': 'pamawsid',              'type': 'text',        'label': 'Aws Id',               'value': [aws_id]},
@@ -794,8 +793,7 @@ class PAMConfigurationNewAzureCommand(Command):
 
         record_data = {
             'title': title,
-            # 'type':  'azure',
-            # 'type':  'PAM Azure Configuration',
+            # 'type':  'pamAzureConfiguration',
             'type':  'PAM Azure Provider',
             'fields': [
                 {'id': 'pamazureid',            'type': 'text',        'label': 'Azure Id',              'value': [azure_id]},
@@ -852,8 +850,7 @@ class PAMConfigurationNewNetworkCommand(Command):
 
         record_data = {
             'title': title,
-            # 'type': 'network',
-            # 'type': 'PAM Network Configuration',
+            # 'type': 'pamNetworkConfiguration',
             'type': 'PAM Network Provider',
             'fields': [
                 {'id': 'pamnetworkid',      'type': 'text',         'label': 'Network Id',      'value': [network_id]},
@@ -928,8 +925,7 @@ class PAMConfigurationNewLocalCommand(Command):
 
         record_data = {
             'title': title,
-            # 'type':  'local',
-            # 'type':  'PAM Local Configuration',
+            # 'type':  'pamLocalConfiguration',
             'type':  'PAM Local Provider',
             'fields': [
                 {'id': 'pamlocalid',        'type': 'text',        'label': 'Local Id',             'value': [local_id]},

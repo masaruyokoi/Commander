@@ -647,7 +647,7 @@ def sync_down(params, record_types=False):
         record_key = record.get('record_key_unencrypted')
         if record_key and 'data_unencrypted' not in record:
             try:
-                if 'version' in record and record['version'] in (3, 4, 5):
+                if 'version' in record and record['version'] in (3, 4, 5, 6):
                     record['data_unencrypted'] = crypto.decrypt_aes_v2(utils.base64_url_decode(record['data']), record_key) if 'data' in record else b'{}'
                 else:
                     record['data_unencrypted'] = crypto.decrypt_aes_v1(utils.base64_url_decode(record['data']), record_key) if 'data' in record else b'{}'
