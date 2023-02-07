@@ -208,10 +208,10 @@ def router_send_action_to_gateway(params, gateway_action: GatewayAction, message
 
             if not gateway_action.gateway_destination:
                 print(f"{bcolors.WARNING}There are more than one Gateways running in your enterprise. "
-                      f"Only {bcolors.HIGHINTENSITYWHITE}pam action rotate{bcolors.WARNING} is able to know "
+                      f"Only '{bcolors.OKGREEN}pam action rotate{bcolors.WARNING}' is able to know "
                       f"which Gateway should receive a request. Any other commands should have a Gateway specified. "
                       f"See help for the command you are trying to use. To find connected gateways run action "
-                      f"'{bcolors.OKBLUE}pam gateway list{bcolors.WARNING}' and provide Gateway UID or Gateway Name.{bcolors.ENDC}")
+                      f"'{bcolors.OKGREEN}pam gateway list{bcolors.WARNING}' and provide Gateway UID or Gateway Name.{bcolors.ENDC}")
 
                 return
 
@@ -310,6 +310,7 @@ def router_send_message_to_gateway(params, transmission_key, rq_proto, destinati
             'TransmissionKey': bytes_to_base64(encrypted_transmission_key),
             'Authorization': f'KeeperUser {bytes_to_base64(encrypted_session_token)}',
         },
+        cookies=destination_gateway_cookies,
         data=encrypted_payload if rq_proto else None
     )
 
