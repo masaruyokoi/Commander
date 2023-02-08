@@ -32,8 +32,7 @@ def get_all_gateways(params):
 def find_connected_gateways(all_controllers, identifier):
     # Will search connected controllers by the "controllerName", "deviceName", or "deviceToken"
 
-    found_connected_controller_uid_bytes = \
-        next((c for c in all_controllers if (CommonHelperMethods.bytes_to_url_safe_str(c) == identifier)), None)
+    found_connected_controller_uid_bytes = next((c for c in all_controllers if (CommonHelperMethods.bytes_to_url_safe_str(c) == identifier)), None)
 
     if found_connected_controller_uid_bytes:
         # if len(found_connected_controller) > 1:

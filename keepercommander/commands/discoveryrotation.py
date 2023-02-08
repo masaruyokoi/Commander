@@ -131,7 +131,7 @@ class PAMConfigurationsCommand(GroupCommand):
     def __init__(self):
         super(PAMConfigurationsCommand, self).__init__()
         self.register_command('new', PAMConfigurationNewCommand(), "Create new PAM Configuration")
-        self.register_command('edit', PAMConfigurationEditCommand(), "Edit PAM Configuration")
+        # self.register_command('edit', PAMConfigurationEditCommand(), "Edit PAM Configuration")
         self.register_command('list', PAMConfigurationListCommand(), 'List available PAM Configurations associated with the Gateway')
         self.register_command('remove', PAMConfigurationRemoveCommand(), "Remove a PAM Configuration")
 
@@ -725,6 +725,28 @@ class PAMConfigurationNewAWSCommand(Command):
 
         default_schedule = kwargs.get('default_schedule')
         default_schedule = [{"type": "WEEKLY", "utcTime": "15:44", "weekday": "SUNDAY", "intervalCount": 1}, {"type": "WEEKLY", "utcTime": "15:44", "weekday": "MONDAY", "intervalCount": 1}]
+        #
+        # record_data = {
+        #     'title': pam_configuration_title,
+        #     'type': 'pamAwsConfiguration',  # this is the record type name in the database
+        #     'fields': [
+        #         {'id': 'pamawsid', 'type': 'text', 'label': 'Aws Id', 'value': [aws_id]},
+        #         {'id': 'pamawsaccesskeyid', 'type': 'text', 'label': 'Access Key Id', 'value': [access_key_id]},
+        #         {'id': 'pamawsaccesssecretkey', 'type': 'text', 'label': 'Access Secret Key',
+        #          'value': [access_secret_key], 'privacyScreen': True},
+        #         {'id': 'pamawsregionname', 'type': 'multiline', 'label': 'Region Names', 'value': [region_names]},
+        #
+        #         {'id': 'pamportmapping', 'type': 'multiline', 'label': 'Port Mapping', 'value': [port_mapping]},
+        #         {'id': 'pamresources', 'type': 'pamResources', 'value': [{
+        #             'controllerUid': controller_uid,
+        #             'resourceRef': [resource_records_uid]
+        #         }],
+        #          },
+        #         {'id': 'pamschedule', 'type': 'schedule', 'value': default_schedule},
+        #         {'id': 'fileref', 'type': 'fileRef', 'value': []}
+        #     ],
+        #     'pamConfig': True
+        # }
 
         record_data = {
             'title': pam_configuration_title,
@@ -850,8 +872,8 @@ class PAMConfigurationNewNetworkCommand(Command):
 
         record_data = {
             'title': title,
-            # 'type': 'pamNetworkConfiguration',
-            'type': 'PAM Network Provider',
+            'type': 'pamNetworkConfiguration',
+            # 'type': 'PAM Network Provider',
             'fields': [
                 {'id': 'pamnetworkid',      'type': 'text',         'label': 'Network Id',      'value': [network_id]},
                 {'id': 'pamnetworkcidr',    'type': 'text',         'label': 'Network CIDR',    'value': [network_cidr]},
@@ -1461,6 +1483,6 @@ class PAMCreateGatewayCommand(Command):
                 print(f'Following one time token will expire in {bcolors.OKBLUE}{ott_expire_in_min}{bcolors.ENDC} '
                       f'minutes):')
 
-            print('--------------------------------')
+            print('-----------------------------------------------')
             print(bcolors.OKGREEN + one_time_token + bcolors.ENDC)
-            print('--------------------------------')
+            print('-----------------------------------------------')

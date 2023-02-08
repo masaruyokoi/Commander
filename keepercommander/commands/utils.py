@@ -46,11 +46,12 @@ from ..error import CommandError, KeeperApiError
 from ..generator import KeeperPasswordGenerator, DicewarePasswordGenerator
 from ..loginv3 import CommonHelperMethods
 from ..params import KeeperParams, LAST_RECORD_UID, LAST_FOLDER_UID, LAST_SHARED_FOLDER_UID
-from ..proto import ssocloud_pb2 as ssocloud
+from ..proto import ssocloud_pb2 as ssocloud, enterprise_pb2
 from ..proto.APIRequest_pb2 import ApiRequest, ApiRequestPayload, ApplicationShareType, AddAppClientRequest, \
     GetAppInfoRequest, GetAppInfoResponse, AppShareAdd, AddAppSharesRequest, RemoveAppClientsRequest, \
     RemoveAppSharesRequest, Salt, MasterPasswordReentryRequest, UNMASK, UserAuthRequest, ALTERNATE, UidRequest, Device,\
     GetApplicationsSummaryResponse
+from ..proto.enterprise_pb2 import DISCOVERY_AND_ROTATION_CONTROLLER
 from ..proto.record_pb2 import ApplicationAddRequest
 from ..recordv3 import init_recordv3_commands
 from ..rest_api import execute_rest
@@ -1555,6 +1556,7 @@ class KSMCommand(Command):
             rq.encryptedAppKey = encrypted_master_key
             rq.lockIp = not is_ip_unlocked
             rq.firstAccessExpireOn = first_access_expire_on_ms
+            rq.appClientType = enterprise_pb2.DISCOVERY_AND_ROTATION_CONTROLLER
 
             if access_expire_in_min:
                 rq.accessExpireOn = access_expire_on_ms
