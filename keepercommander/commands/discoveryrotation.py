@@ -1133,6 +1133,7 @@ class PAMGatewayActionRotateCommand(Command):
 
         if not connected_controller:
             print(f'{bcolors.WARNING}The Gateway "{controller_from_config}" is down.{bcolors.ENDC}')
+            return
 
         # rrs = RouterRotationStatus.Name(ri.status)
         # if rrs == 'RRS_NO_ROTATION':
