@@ -712,7 +712,8 @@ class PAMConfigurationNewAWSCommand(Command):
     def execute(self, params, **kwargs):
         shared_folder_uid = kwargs.get('shared_folder')
         pam_configuration_title = kwargs.get('title')
-        gateway_str = kwargs.get('gateway')     # TODO allow name or UID
+        gateway_str = kwargs.get('gateway')
+        found_gateway_uid = find_one_gateway_by_uid_or_name(params, gateway_str)
 
         aws_id = kwargs.get('aws_id')
         access_key_id = kwargs.get('access_key_id')
@@ -720,54 +721,32 @@ class PAMConfigurationNewAWSCommand(Command):
         region_names = kwargs.get('region_names')
         port_mapping = kwargs.get('port_mapping')
 
-        controller_uid = gateway_str
         resource_records_uid = kwargs.get('resource_records_uid')
 
         default_schedule = kwargs.get('default_schedule')
         default_schedule = [{"type": "WEEKLY", "utcTime": "15:44", "weekday": "SUNDAY", "intervalCount": 1}, {"type": "WEEKLY", "utcTime": "15:44", "weekday": "MONDAY", "intervalCount": 1}]
-        #
-        # record_data = {
-        #     'title': pam_configuration_title,
-        #     'type': 'pamAwsConfiguration',  # this is the record type name in the database
-        #     'fields': [
-        #         {'id': 'pamawsid', 'type': 'text', 'label': 'Aws Id', 'value': [aws_id]},
-        #         {'id': 'pamawsaccesskeyid', 'type': 'text', 'label': 'Access Key Id', 'value': [access_key_id]},
-        #         {'id': 'pamawsaccesssecretkey', 'type': 'text', 'label': 'Access Secret Key',
-        #          'value': [access_secret_key], 'privacyScreen': True},
-        #         {'id': 'pamawsregionname', 'type': 'multiline', 'label': 'Region Names', 'value': [region_names]},
-        #
-        #         {'id': 'pamportmapping', 'type': 'multiline', 'label': 'Port Mapping', 'value': [port_mapping]},
-        #         {'id': 'pamresources', 'type': 'pamResources', 'value': [{
-        #             'controllerUid': controller_uid,
-        #             'resourceRef': [resource_records_uid]
-        #         }],
-        #          },
-        #         {'id': 'pamschedule', 'type': 'schedule', 'value': default_schedule},
-        #         {'id': 'fileref', 'type': 'fileRef', 'value': []}
-        #     ],
-        #     'pamConfig': True
-        # }
 
         record_data = {
             'title': pam_configuration_title,
-            # 'type':  'pamAwsConfiguration',   # this is the record type name in the database
-            'type':  'PAM AWS Provider',    # temporary, to be removed
+            'type': 'pamAwsConfiguration',  # this is the record type name in the database
             'fields': [
-                {'id': 'pamawsid',              'type': 'text',        'label': 'Aws Id',               'value': [aws_id]},
-                {'id': 'pamawsaccesskeyid',     'type': 'text',        'label': 'Access Key Id',        'value': [access_key_id]},
-                {'id': 'pamawsaccesssecretkey', 'type': 'text',        'label': 'Access Secret Key',    'value': [access_secret_key],     'privacyScreen': True},
-                {'id': 'pamawsregionname',      'type': 'multiline',   'label': 'Region Names',         'value': [region_names] },
+                {'id': 'pamawsid', 'type': 'text', 'label': 'Aws Id', 'value': [aws_id]},
+                {'id': 'pamawsaccesskeyid', 'type': 'text', 'label': 'Access Key Id', 'value': [access_key_id]},
+                {'id': 'pamawsaccesssecretkey', 'type': 'text', 'label': 'Access Secret Key', 'value': [access_secret_key], 'privacyScreen': True},
+                {'id': 'pamawsregionname', 'type': 'multiline', 'label': 'Region Names', 'value': [region_names]},
 
-                {'id': 'pamportmapping',        'type': 'multiline',   'label': 'Port Mapping',         'value': [port_mapping]},
-                {'id': 'pamcontroller',         'type': 'controller',                                   'value': [controller_uid]},
-                {'id': 'pamresourceref',        'type': 'resourceRef',                                  'value': [resource_records_uid]},
-                {'id': 'pamschedule',           'type': 'schedule',                                     'value': default_schedule},
-                {'id': 'fileref',               'type': 'fileRef',                                      'value': []}
+                {'id': 'pamportmapping', 'type': 'multiline', 'label': 'Port Mapping', 'value': [port_mapping]},
+                {'id': 'pamresources', 'type': 'pamResources', 'value': [{
+                    'controllerUid': found_gateway_uid,
+                    'resourceRef': [resource_records_uid]}],
+                 },
+                {'id': 'pamschedule', 'type': 'schedule', 'value': default_schedule},
+                {'id': 'fileref', 'type': 'fileRef', 'value': []}
             ],
             'pamConfig': True
         }
 
-        pam_configuration_create_record_v6(params, record_data, controller_uid, shared_folder_uid)
+        pam_configuration_create_record_v6(params, record_data, found_gateway_uid, shared_folder_uid)
 
 
 
@@ -799,7 +778,9 @@ class PAMConfigurationNewAzureCommand(Command):
     def execute(self, params, **kwargs):
         shared_folder_uid = kwargs.get('shared_folder')
         title = kwargs.get('title')
-        found_gateway_uid = find_one_gateway_by_uid_or_name(params, kwargs.get('gateway'))
+        gateway_str = kwargs.get('gateway')
+        found_gateway_uid = find_one_gateway_by_uid_or_name(params, gateway_str)
+
         resource_records_uid = kwargs.get('resource_records_uid')
 
         azure_id = kwargs.get('azure_id')
@@ -809,6 +790,7 @@ class PAMConfigurationNewAzureCommand(Command):
         tenant_id = kwargs.get('tenant_id')
         resource_groups = kwargs.get('resource_groups')
         port_mapping = kwargs.get('port_mapping')
+        controller_uid = gateway_str
 
         default_schedule = kwargs.get('default_schedule')
         default_schedule = [{"type": "WEEKLY", "utcTime": "15:44", "weekday": "SUNDAY", "intervalCount": 1}, {"type": "WEEKLY", "utcTime": "15:44", "weekday": "MONDAY", "intervalCount": 1}]
@@ -826,8 +808,11 @@ class PAMConfigurationNewAzureCommand(Command):
                 {'id': 'pamazureresourcegroup', 'type': 'multiline',   'label': 'Resource Groups',       'value': [resource_groups], },
 
                 {'id': 'pamportmapping',        'type': 'multiline',   'label': 'Port Mapping',          'value': [port_mapping]},
-                {'id': 'pamcontroller',         'type': 'controller',                                   'value': [found_gateway_uid]},
-                {'id': 'pamresourceref',        'type': 'resourceRef',                                  'value': [resource_records_uid]},
+                {'id': 'pamresources',          'type': 'pamResources',                                  'value': [{
+                                                                                                                        'controllerUid': controller_uid,
+                                                                                                                        'resourceRef': [resource_records_uid]
+                                                                                                                  }],
+                },
                 {'id': 'pamschedule',           'type': 'schedule',                                     'value': default_schedule},
                 {'id': 'fileref',               'type': 'fileRef',                                      'value': []}
             ],
@@ -860,7 +845,8 @@ class PAMConfigurationNewNetworkCommand(Command):
 
         shared_folder_uid = kwargs.get('shared_folder')
         title = kwargs.get('title')
-        found_gateway_uid = find_one_gateway_by_uid_or_name(params, kwargs.get('gateway'))
+        gateway_str = kwargs.get('gateway')
+        found_gateway_uid = find_one_gateway_by_uid_or_name(params, gateway_str)
         resource_records_uid = kwargs.get('resource_records_uid')
 
         default_schedule = kwargs.get('default_schedule')
@@ -879,7 +865,11 @@ class PAMConfigurationNewNetworkCommand(Command):
                 {'id': 'pamnetworkcidr',    'type': 'text',         'label': 'Network CIDR',    'value': [network_cidr]},
                 {'id': 'pamportmapping',    'type': 'multiline',    'label': 'Port Mapping',    'value': [port_mapping]},
                 {'id': 'pamcontroller',     'type': 'controller',                               'value': [found_gateway_uid]},
-                {'id': 'pamresourceref',    'type': 'resourceRef',                              'value': [resource_records_uid]},
+                {'id': 'pamresources',      'type': 'pamResources',                             'value': [{
+                                                                                                            'controllerUid': found_gateway_uid,
+                                                                                                            'resourceRef': [resource_records_uid]
+                                                                                                         }],
+                },
                 {'id': 'pamschedule',       'type': 'schedule',                                 'value': default_schedule},
                 {'id': 'fileref',           'type': 'fileRef',                                  'value': []}
             ],
@@ -935,7 +925,8 @@ class PAMConfigurationNewLocalCommand(Command):
 
         shared_folder_uid = kwargs.get('shared_folder')
         title = kwargs.get('title')
-        found_gateway_uid = find_one_gateway_by_uid_or_name(params, kwargs.get('gateway'))
+        gateway_str = kwargs.get('gateway')
+        found_gateway_uid = find_one_gateway_by_uid_or_name(params, gateway_str)
         resource_records_uid = kwargs.get('resource_records_uid')
 
         default_schedule = kwargs.get('default_schedule')
@@ -954,7 +945,11 @@ class PAMConfigurationNewLocalCommand(Command):
 
                 {'id': 'pamportmapping',    'type': 'multiline',   'label': 'Port Mapping',         'value': [port_mapping]},
                 {'id': 'pamcontroller',     'type': 'controller',                                   'value': [found_gateway_uid]},
-                {'id': 'pamresourceref',    'type': 'resourceRef',                                  'value': [resource_records_uid]},
+                {'id': 'pamresources',      'type': 'pamResources',                                 'value': [{
+                                                                                                                'controllerUid': found_gateway_uid,
+                                                                                                                'resourceRef': [resource_records_uid]
+                                                                                                             }],
+                 },
                 {'id': 'pamschedule',       'type': 'schedule',                                     'value': default_schedule},
                 {'id': 'fileref',           'type': 'fileRef',                                      'value': []}
             ],
