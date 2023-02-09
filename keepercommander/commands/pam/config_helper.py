@@ -179,6 +179,10 @@ def pam_configuration_remove(params, configuration_uid):
 
     RecordRemoveCommand().execute(params, record=configuration_uid, force=True)
 
+    if configuration_uid in params.record_cache:
+        del params.record_cache[configuration_uid]
+
+    # SyncDownCommand().execute(params, force=True)
     print(f'{bcolors.OKGREEN}PAM Configuration was removed successfully{bcolors.ENDC}')
 
     # raise Exception("Not implemented yet...")
