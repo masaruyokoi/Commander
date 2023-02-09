@@ -797,8 +797,7 @@ class PAMConfigurationNewAzureCommand(Command):
 
         record_data = {
             'title': title,
-            # 'type':  'pamAzureConfiguration',
-            'type':  'PAM Azure Provider',
+            'type':  'pamAzureConfiguration',
             'fields': [
                 {'id': 'pamazureid',            'type': 'text',        'label': 'Azure Id',              'value': [azure_id]},
                 {'id': 'pamazureclientid',      'type': 'text',        'label': 'Client ID',             'value': [client_id]},
@@ -859,7 +858,6 @@ class PAMConfigurationNewNetworkCommand(Command):
         record_data = {
             'title': title,
             'type': 'pamNetworkConfiguration',
-            # 'type': 'PAM Network Provider',
             'fields': [
                 {'id': 'pamnetworkid',      'type': 'text',         'label': 'Network Id',      'value': [network_id]},
                 {'id': 'pamnetworkcidr',    'type': 'text',         'label': 'Network CIDR',    'value': [network_cidr]},
@@ -938,8 +936,7 @@ class PAMConfigurationNewLocalCommand(Command):
 
         record_data = {
             'title': title,
-            # 'type':  'pamLocalConfiguration',
-            'type':  'PAM Local Provider',
+            'type':  'pamLocalConfiguration',
             'fields': [
                 {'id': 'pamlocalid',        'type': 'text',        'label': 'Local Id',             'value': [local_id]},
 
