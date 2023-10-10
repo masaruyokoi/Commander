@@ -19,11 +19,31 @@ class RouterRequest:
 # ACTION INPUTS
 
 
-class GatewayActionDiscoverInputs:
+class GatewayActionDiscoverStartInputs:
 
-    def __init__(self, shared_folder_uid, provider_record_uid):
-        self.shared_folder_uid = shared_folder_uid
-        self.provider_record_uid = provider_record_uid
+    def __init__(self, configuration_uid, job_id):
+        self.configurationUid = configuration_uid
+        self.jobId = job_id
+
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
+
+
+class GatewayActionDiscoverStatusInputs:
+
+    def __init__(self, configuration_uid, job_ids):
+        self.configurationUid = configuration_uid
+        self.jobIds = job_ids
+
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
+
+
+class GatewayActionDiscoverGetInputs:
+
+    def __init__(self, configuration_uid, job_id):
+        self.configurationUid = configuration_uid
+        self.jobId = job_id
 
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
@@ -66,10 +86,28 @@ class GatewayActionGatewayInfo(GatewayAction):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
 
-class GatewayActionDiscover(GatewayAction):
+class GatewayActionDiscoverStart(GatewayAction):
 
-    def __init__(self, inputs: GatewayActionDiscoverInputs, conversation_id=None):
-        super().__init__('discover', inputs=inputs, conversation_id=conversation_id, is_scheduled=True)
+    def __init__(self, inputs: GatewayActionDiscoverStartInputs, conversation_id=None):
+        super().__init__('discover-start', inputs=inputs, conversation_id=conversation_id, is_scheduled=True)
+
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
+
+
+class GatewayActionDiscoverStatus(GatewayAction):
+
+    def __init__(self, inputs: GatewayActionDiscoverStatusInputs, conversation_id=None):
+        super().__init__('discover-status', inputs=inputs, conversation_id=conversation_id, is_scheduled=True)
+
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
+
+
+class GatewayActionDiscoverGet(GatewayAction):
+
+    def __init__(self, inputs: GatewayActionDiscoverGetInputs, conversation_id=None):
+        super().__init__('discover-get', inputs=inputs, conversation_id=conversation_id, is_scheduled=True)
 
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
